@@ -1,7 +1,36 @@
+# ----------------------------------------
+# Application dependencies
+# ----------------------------------------
+
 /app/vendor/
 /node_modules/
+
+# ----------------------------------------
+# Application files and folders
+# ----------------------------------------
+
+/.cache/
+/app/cache/
+/app/assets/
+
+# ----------------------------------------
+# User generated files
+# ----------------------------------------
+
+/.analytics
+/.customizations.html
 /.env
 /.hidden
-/.php-cs-fixer.cache
-/.phpunit.result.cache
-/mix-manifest.json
+
+# ----------------------------------------
+# Documentation files
+# ----------------------------------------
+
+/docs/.vitepress/cache
+/docs/.vitepress/dist
+
+# ----------------------------------------
+# Test files and folders
+# ----------------------------------------
+
+/tests/_files/cache/

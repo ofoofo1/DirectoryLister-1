@@ -1,25 +1,27 @@
 <?php
 
-use App\Bootstrap\AppManager;
-use App\Bootstrap\BootManager;
+declare(strict_types=1);
+
+use App\Bootstrap\Builder;
 use Dotenv\Dotenv;
+use Slim\App;
 
 require __DIR__ . '/app/vendor/autoload.php';
-
-// Set file access restrictions
-ini_set('open_basedir', __DIR__);
 
 // Initialize environment variable handler
 Dotenv::createUnsafeImmutable(__DIR__)->safeLoad();
 
-// Initialize the container
-$container = BootManager::createContainer(
+// Set file access restrictions
+ini_set('open_basedir', implode(PATH_SEPARATOR, [__DIR__, getenv('FILES_PATH')]));
+
+// Create the DI container
+$container = Builder::createContainer(
     __DIR__ . '/app/config',
     __DIR__ . '/app/cache'
 );
 
-// Initialize the application
-$app = $container->call(AppManager::class);
+// Create the application
+$app = $container->get(App::class);
 
 // Engage!
 $app->run();

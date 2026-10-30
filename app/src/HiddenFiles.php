@@ -1,36 +1,38 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App;
 
 use BadMethodCallException;
-use Tightenco\Collect\Support\Collection;
+use DI\Container;
+use Illuminate\Support\Collection;
 
+/** @extends Collection<int, string> */
 class HiddenFiles extends Collection
 {
-    /** @inheritdoc */
     protected function __construct($items = [])
     {
         parent::__construct($items);
     }
 
-    /** {@inheritdoc} */
-    public static function make($items = [])
+    public static function make($items = []): never
     {
         throw new BadMethodCallException('Method not implemented');
     }
 
     /** Create a new HiddenFiles collection object. */
-    public static function fromConfig(Config $config): self
+    public static function fromContainer(Container $container): self
     {
-        $items = $config->get('hidden_files');
+        $items = $container->get('hidden_files');
 
-        if (is_readable($config->get('hidden_files_list'))) {
-            $hiddenFiles = file($config->get('hidden_files_list'), FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        if (is_readable($container->get('hidden_files_list'))) {
+            $hiddenFiles = file($container->get('hidden_files_list'), FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
             $items = array_merge($items, $hiddenFiles ?: []);
         }
 
-        if ($config->get('hide_app_files')) {
-            $items = array_merge($items, $config->get('app_files'));
+        if (filter_var($container->get('hide_app_files'), FILTER_VALIDATE_BOOL)) {
+            $items = array_merge($items, $container->get('app_files'));
         }
 
         return new self(array_unique($items));

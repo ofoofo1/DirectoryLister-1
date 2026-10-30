@@ -1,6 +1,11 @@
 <?php
 
-use App\Config;
+declare(strict_types=1);
+
+use DI\Container;
+
+use function DI\env;
+use function DI\value;
 
 return [
     /**
@@ -8,18 +13,18 @@ return [
      * the cache across requests. Additional driver-specific options may require
      * configuration below.
      *
-     * Possible values: apcu, array, file, memcached, redis, php-file
+     * Possible values: apcu, array, file, memcached, redis, php-file, valkey
      *
      * Default value: 'file'
      */
-    'cache_driver' => DI\env('CACHE_DRIVER', 'file'),
+    'cache_driver' => env('CACHE_DRIVER', 'file'),
 
     /**
      * The app cache lifetime (in seconds). If set to 0, cache indefinitely.
      *
      * Default value: 3600 (one hour)
      */
-    'cache_lifetime' => DI\env('CACHE_LIFETIME', 3600),
+    'cache_lifetime' => env('CACHE_LIFETIME', 3600),
 
     /**
      * Some cache drivers require manually pruning the cache periodically to
@@ -28,7 +33,7 @@ return [
      *
      * Default value: 2
      */
-    'cache_lottery' => DI\env('CACHE_LOTTERY', 2),
+    'cache_lottery' => env('CACHE_LOTTERY', 2),
 
     /**
      * Path to the view cache directory. Set to 'false' to disable
@@ -37,21 +42,21 @@ return [
      *
      * Default value: 'app/cache/views'
      */
-    'view_cache' => DI\env('VIEW_CACHE', 'app/cache/views'),
+    'view_cache' => env('VIEW_CACHE', 'app/cache/views'),
 
     /**
      * The Memcached server hostname or IP address.
      *
      * Default value: 'localhost'
      */
-    'memcached_host' => DI\env('MEMCACHED_HOST', 'localhost'),
+    'memcached_host' => env('MEMCACHED_HOST', 'localhost'),
 
     /**
      * The Memcached server port.
      *
      * Default value: 11211
      */
-    'memcached_port' => DI\env('MEMCACHED_PORT', 11211),
+    'memcached_port' => env('MEMCACHED_PORT', 11211),
 
     /**
      * The Memcached configuration closure. This option is used when the
@@ -66,10 +71,10 @@ return [
      *
      * Default value: Connects to a server at localhost:11211
      */
-    'memcached_config' => DI\value(function (Memcached $memcached, Config $config): void {
+    'memcached_config' => value(function (Memcached $memcached, Container $container): void {
         $memcached->addServer(
-            $config->get('memcached_host'),
-            $config->get('memcached_port')
+            (string) $container->get('memcached_host'),
+            (int) $container->get('memcached_port')
         );
     }),
 
@@ -78,14 +83,14 @@ return [
      *
      * Default value: 'localhost'
      */
-    'redis_host' => DI\env('REDIS_HOST', 'localhost'),
+    'redis_host' => env('REDIS_HOST', 'localhost'),
 
     /**
      * The Redis server port.
      *
      * Default value: 6379
      */
-    'redis_port' => DI\env('REDIS_PORT', 6379),
+    'redis_port' => env('REDIS_PORT', 6379),
 
     /**
      * The Redis configuration closure. This option is used when the
@@ -99,10 +104,10 @@ return [
      *
      * Default value: Connects to a server at localhost:6379
      */
-    'redis_config' => DI\value(function (Redis $redis, Config $config): void {
+    'redis_config' => DI\value(function (Redis $redis, Container $container): void {
         $redis->pconnect(
-            $config->get('redis_host'),
-            $config->get('redis_port')
+            (string) $container->get('redis_host'),
+            (int) $container->get('redis_port')
         );
     }),
 

@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Middlewares;
 
-use App\Config;
+use DI\Attribute\Inject;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
@@ -11,20 +13,13 @@ use Symfony\Contracts\Cache\CacheInterface;
 
 class PruneCacheMiddleware
 {
-    /** @var Config The application configuration */
-    protected $config;
+    #[Inject('cache_lottery')]
+    private int $cacheLottery;
 
-    /** @var CacheInterface The application cache */
-    protected $cache;
+    public function __construct(
+        private CacheInterface $cache
+    ) {}
 
-    /** Create a new CachePruneMiddleware object. */
-    public function __construct(Config $config, CacheInterface $cache)
-    {
-        $this->config = $config;
-        $this->cache = $cache;
-    }
-
-    /** Invoke the CachePruneMiddleware class. */
     public function __invoke(Request $request, RequestHandler $handler): ResponseInterface
     {
         $response = $handler->handle($request);
@@ -43,6 +38,6 @@ class PruneCacheMiddleware
     /** Determine if this request wins the lottery. */
     private function winsLottery(): bool
     {
-        return random_int(1, 100) <= $this->config->get('cache_lottery');
+        return random_int(1, 100) <= $this->cacheLottery;
     }
 }

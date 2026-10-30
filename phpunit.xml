@@ -1,24 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit bootstrap="app/vendor/autoload.php" colors="true"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<phpunit
+    bootstrap="app/vendor/autoload.php" colors="true" cacheDirectory=".cache/phpunit" requireCoverageMetadata="true"
     xsi:noNamespaceSchemaLocation="app/vendor/phpunit/phpunit/phpunit.xsd"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 >
-  <coverage processUncoveredFiles="true">
-    <include>
-      <directory suffix=".php">app/</directory>
-    </include>
-    <exclude>
-      <directory>app/cache</directory>
-      <directory>app/config</directory>
-      <directory>app/vendor</directory>
-    </exclude>
-  </coverage>
-  <testsuites>
-    <testsuite name="Directory Lister Test Suite">
-      <directory suffix="Test.php">tests/</directory>
-    </testsuite>
-  </testsuites>
-  <listeners>
-    <listener class="JohnKary\PHPUnit\Listener\SpeedTrapListener"/>
-  </listeners>
+    <testsuites>
+        <testsuite name="Directory Lister Test Suite">
+            <directory suffix="Test.php">tests/</directory>
+        </testsuite>
+    </testsuites>
+
+    <source>
+        <include>
+            <directory suffix=".php">app/</directory>
+        </include>
+
+        <exclude>
+            <directory>app/cache</directory>
+            <directory>app/config</directory>
+            <directory>app/vendor</directory>
+        </exclude>
+    </source>
+
+    <php>
+        <server name="HTTP_HOST" value="localhost"/>
+    </php>
 </phpunit>

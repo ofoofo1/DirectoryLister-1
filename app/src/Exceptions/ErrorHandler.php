@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Exceptions;
 
 use Psr\Http\Message\ResponseInterface;
@@ -12,20 +14,11 @@ use Throwable;
 
 class ErrorHandler implements ErrorHandlerInterface
 {
-    /** @var Twig Twig templating component */
-    protected $view;
+    public function __construct(
+        private Twig $view,
+        private TranslatorInterface $translator
+    ) {}
 
-    /** @var TranslatorInterface Translation component */
-    protected $translator;
-
-    /** Create a new ErrorHandler object. */
-    public function __construct(Twig $view, TranslatorInterface $translator)
-    {
-        $this->view = $view;
-        $this->translator = $translator;
-    }
-
-    /** Invoke the ErrorHandler class. */
     public function __invoke(
         ServerRequestInterface $request,
         Throwable $exception,

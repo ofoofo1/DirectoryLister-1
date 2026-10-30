@@ -9,7 +9,7 @@
     <br>
     <img alt="Packagist PHP Version Support" src="https://img.shields.io/packagist/php-v/phlak/directory-lister?style=flat-square">
     <a href="https://github.com/DirectoryLister/DirectoryLister/blob/master/LICENSE"><img src="https://img.shields.io/github/license/DirectoryLister/DirectoryLister?style=flat-square" alt="License"></a>
-    <a href="https://github.com/DirectoryLister/DirectoryLister/actions" alt="Build Status"><img src="https://img.shields.io/github/checks-status/DirectoryLister/DirectoryLister/master?style=flat-square"></a>
+    <a href="https://github.com/DirectoryLister/DirectoryLister/actions" alt="Build Status"><img src="https://img.shields.io/github/actions/workflow/status/DirectoryLister/DirectoryLister/ci-suite.yaml?style=flat-square"></a>
 </p>
 
 ---
@@ -18,9 +18,11 @@ Directory Lister is the easiest way to expose the contents of any web-accessible
 folder for browsing and sharing. With a zero configuration, drag-and-drop
 installation you'll be up and running in less than a minute.
 
+![Screenshot](screenshot.png)
+
 Directory Lister is created and maintained by
 [Chris Kankiewicz](https://www.chriskankiewicz.com)
-([@PHLAK](https://twitter.com/PHLAK)) with help from
+([@PHLAK.dev](https://bsky.app/profile/phlak.dev)) with help through
 [community contributions](https://github.com/DirectoryLister/DirectoryLister/graphs/contributors).
 
 Features
@@ -38,12 +40,20 @@ Features
 Requirements
 ------------
 
-  - Directory Lister requires [PHP](https://www.php.net/) >= 7.2
+  - Directory Lister requires [PHP](https://www.php.net/) >= 8.2
+    - The [Multibyte String](https://www.php.net/manual/en/book.mbstring.php) extension is required
     - The [Zip](https://www.php.net/manual/en/book.zip.php) extension is required for zip downloads
     - The [DOM](https://www.php.net/en/dom) and [Fileinfo](https://www.php.net/manual/en/book.fileinfo.php) extensions are required for README rendering
 
 Installation
 ------------
+
+### Docker Compose
+
+For quick and easy management via [Docker Compose](https://docs.docker.com/compose/)
+check out [Directory Lister Compose](https://github.com/DirectoryLister/directory-lister-compose).
+
+### Manual Installation
 
   1. [Download Directory Lister](https://www.directorylister.com)
   2. Extract the zip/tar archive
@@ -56,6 +66,15 @@ Configuration
   2. Edit the configuration values in `.env`
 
 See the [Configuration Documentation](https://docs.directorylister.com/configuration) for more information.
+
+Warnings
+--------
+
+> [!WARNING]
+> **DO NOT USE DIRECTORY LISTER TO HOST PRIVATE OR SENSITIVE FILES!**
+>
+> Directory Lister is designed for public file sharing only. Files within the
+> configured files path (including hidden files) will be publicly accessible.
 
 Sponsors
 --------
@@ -73,7 +92,7 @@ Troubleshooting
 
 See the [Help & Support](https://docs.directorylister.com/help-and-support) section of the documentation for troubleshooting instructions.
 
-For general help and support join our [GitHub Discussion](https://github.com/DirectoryLister/DirectoryLister/discussions) or reach out on [Twitter](https://twitter.com/DirectoryLister).
+For general help and support join our [GitHub Discussion](https://github.com/DirectoryLister/DirectoryLister/discussions) or reach out on [Bluesky](https://bsky.app/profile/directorylister.com).
 
 Please report bugs to the [GitHub Issue Tracker](https://github.com/DirectoryLister/DirectoryLister/issues).
 

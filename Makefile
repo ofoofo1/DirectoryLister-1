@@ -3,11 +3,11 @@ ARTIFACT_NAME="DirectoryLister-$$(git describe --tags --exact-match HEAD 2> /dev
 
 dev development: # Build application for development
 	@composer install --no-interaction
-	@npm install && npm run dev
+	@npm install
 
 prod production: # Build application for production
 	@composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
-	@npm install --no-save && npm run production && npm prune --production
+	@npm install --no-save && npm run build && npm prune --production
 
 update upgrade: # Update application dependencies
 	@composer update && npm update && npm install && npm audit fix
@@ -31,16 +31,18 @@ test: # Run tests
 suite: analyze test # Run coding standards and static analysis checks and tests
 
 coverage: # Generate an HTML coverage report
-	@docker-compose run --rm -e XDEBUG_MODE=coverage app app/vendor/bin/phpunit --coverage-html .coverage
+	@phpunit --coverage-html .coverage
 
-tunnel: # Expose the application via secure tunnel
-	@composer exec expose share directory-lister.local
+rebuild: # Rebuild and pull new images and recreate Docker containers
+	@docker compose build --pull
+	@docker compose pull --ignore-buildable
+	@docker compose up -d --force-recreate
 
 clear-assets: # Clear the compiled assets
-	@rm app/assets/* -rfv
+	@rm --recursive --force --verbose app/assets/*
 
 clear-cache: # Clear the application cache
-	@rm app/cache/* -rfv
+	@rm --recursive --force --verbose app/cache/*
 
 tar: # Generate tarball
 	@tar --exclude-vcs --exclude=app/cache/* --exclude=app/resources \

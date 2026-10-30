@@ -1,4 +1,5 @@
 parameters:
+  level: 8
 
   paths:
     - app
@@ -8,16 +9,12 @@ parameters:
     - app/cache/*
     - app/vendor/*
 
+  tmpDir: .cache/phpstan
+
   stubFiles:
     - stubs/DI/Container.stub
 
-  level: 8
-
   checkFunctionNameCase: true
-  checkMissingIterableValueType: false
-
-
-  reportUnmatchedIgnoredErrors: false
 
   exceptions:
     implicitThrows: false
@@ -27,15 +24,23 @@ parameters:
       tooWideThrowType: true
 
     uncheckedExceptionClasses:
-      - 'DI\DependencyException'
-      - 'InvalidArgumentException'
-      - 'Invoker\Exception\NotCallableException'
-      - 'LogicException'
-      - 'RuntimeException'
-      - 'Psr\Cache\InvalidArgumentException'
-      - 'SebastianBergmann\RecursionContext\InvalidArgumentException'
-      - 'Symfony\Component\Cache\Exception\CacheException'
-      - 'PHPUnit\Framework\Exception'
+      - DI\DependencyException
+      - DI\NotFoundException
+      - InvalidArgumentException
+      - Invoker\Exception\InvocationException
+      - Invoker\Exception\NotCallableException
+      - JsonException
+      - LogicException
+      - PHPUnit\Framework\Exception
+      - Psr\Cache\InvalidArgumentException
+      - Random\RandomException
+      - RuntimeException
+      - SebastianBergmann\RecursionContext\InvalidArgumentException
+      - Symfony\Component\Cache\Exception\CacheException
+      - Twig\Error\Error
+
+  ignoreErrors:
+    - identifier: property.onlyRead
 
 includes:
   - phpstan-baseline.neon

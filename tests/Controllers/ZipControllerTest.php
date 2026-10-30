@@ -1,26 +1,34 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Controllers;
 
 use App\Controllers\ZipController;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use Psr\Http\Message\ResponseInterface;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
-use Symfony\Component\Finder\Finder;
-use Symfony\Contracts\Translation\TranslatorInterface;
 use Tests\TestCase;
+use ZipArchive;
 
-/** @covers \App\Controllers\ZipController */
+#[CoversClass(ZipController::class)]
 class ZipControllerTest extends TestCase
 {
-    public function test_it_returns_a_successful_response_for_a_zip_request(): void
+    public static function environmentBooleans(): array
     {
-        $controller = new ZipController(
-            $this->config,
-            $this->cache,
-            new Finder,
-            $this->container->get(TranslatorInterface::class)
-        );
+        return [
+            'false' => ['false', false],
+            'true' => ['true', true],
+        ];
+    }
+
+    #[Test]
+    public function it_returns_a_successful_response_for_a_zip_request(): void
+    {
+        $controller = $this->container->get(ZipController::class);
 
         $request = $this->createMock(Request::class);
         $request->method('getQueryParams')->willReturn(['zip' => 'subdir']);
@@ -30,19 +38,57 @@ class ZipControllerTest extends TestCase
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
-        $this->assertEquals('application/zip', finfo_buffer(
-            finfo_open(), (string) $response->getBody(), FILEINFO_MIME_TYPE
-        ));
+        $this->assertEquals('application/zip', $response->getHeader('Content-Type')[0]);
     }
 
-    public function test_it_returns_a_404_error_when_not_found(): void
+    #[Test, DataProvider('environmentBooleans')]
+    public function it_respects_the_zip_downloads_environment_variable(string $value, bool $enabled): void
     {
-        $controller = new ZipController(
-            $this->config,
-            $this->cache,
-            new Finder,
-            $this->container->get(TranslatorInterface::class)
-        );
+        $previous = $_ENV;
+        $_ENV['ZIP_DOWNLOADS'] = $value;
+
+        try {
+            $controller = $this->container->get(ZipController::class);
+            $request = $this->createMock(Request::class);
+            $request->method('getQueryParams')->willReturn(['zip' => 'subdir']);
+
+            $response = $controller($request, new Response);
+
+            $this->assertSame($enabled ? 200 : 404, $response->getStatusCode());
+        } finally {
+            $_ENV = $previous;
+        }
+    }
+
+    #[Test, DataProvider('environmentBooleans')]
+    public function it_respects_the_zip_compress_environment_variable(string $value, bool $compressed): void
+    {
+        $previous = $_ENV;
+        $_ENV['ZIP_COMPRESS'] = $value;
+
+        try {
+            $controller = $this->container->get(ZipController::class);
+            $request = $this->createMock(Request::class);
+            $request->method('getQueryParams')->willReturn(['zip' => 'subdir']);
+
+            $response = $controller($request, new Response);
+
+            ob_start();
+            $response->getBody()->read(1);
+            $zip = (string) ob_get_clean();
+
+            $this->assertSame(200, $response->getStatusCode());
+            $this->assertSame('PK' . chr(3) . chr(4), substr($zip, 0, 4));
+            $this->assertSame($compressed ? 8 : 0, ord($zip[8]) | (ord($zip[9]) << 8));
+        } finally {
+            $_ENV = $previous;
+        }
+    }
+
+    #[Test]
+    public function it_returns_a_404_error_when_not_found(): void
+    {
+        $controller = $this->container->get(ZipController::class);
 
         $request = $this->createMock(Request::class);
         $request->method('getQueryParams')->willReturn(['zip' => '404']);
@@ -54,15 +100,12 @@ class ZipControllerTest extends TestCase
         $this->assertEquals(404, $response->getStatusCode());
     }
 
-    public function test_it_returns_a_404_error_when_disabled_via_config(): void
+    #[Test]
+    public function it_returns_a_404_error_when_disabled_via_config(): void
     {
         $this->container->set('zip_downloads', false);
-        $controller = new ZipController(
-            $this->config,
-            $this->cache,
-            new Finder,
-            $this->container->get(TranslatorInterface::class)
-        );
+
+        $controller = $this->container->get(ZipController::class);
 
         $request = $this->createMock(Request::class);
         $request->method('getQueryParams')->willReturn(['zip' => 'subdir']);
@@ -72,5 +115,39 @@ class ZipControllerTest extends TestCase
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertEquals(404, $response->getStatusCode());
+    }
+
+    #[Test]
+    public function it_downloads_a_compressed_archive_with_the_original_file_contents(): void
+    {
+        $this->container->set('zip_compress', true);
+        $controller = $this->container->get(ZipController::class);
+        $request = $this->createMock(Request::class);
+        $request->method('getQueryParams')->willReturn(['zip' => 'subdir']);
+
+        $response = $controller($request, new Response);
+
+        ob_start();
+        $response->getBody()->read(1);
+        $contents = (string) ob_get_clean();
+
+        $path = tempnam(sys_get_temp_dir(), 'directory-lister-zip-');
+        $this->assertIsString($path);
+        file_put_contents($path, $contents);
+
+        $archive = new ZipArchive;
+        $this->assertTrue($archive->open($path));
+
+        try {
+            $this->assertSame(200, $response->getStatusCode());
+            $this->assertSame(strlen($contents), (int) $response->getHeaderLine('Content-Length'));
+            $this->assertSame(
+                file_get_contents($this->filePath('subdir/alpha.scss')),
+                $archive->getFromName('alpha.scss')
+            );
+        } finally {
+            $archive->close();
+            unlink($path);
+        }
     }
 }

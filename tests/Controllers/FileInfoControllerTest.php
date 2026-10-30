@@ -1,24 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Controllers;
 
 use App\Controllers\FileInfoController;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use Psr\Http\Message\ResponseInterface;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
-use Symfony\Contracts\Translation\TranslatorInterface;
 use Tests\TestCase;
 
-/** @covers \App\Controllers\FileInfoController */
+#[CoversClass(FileInfoController::class)]
 class FileInfoControllerTest extends TestCase
 {
-    public function test_it_can_return_a_successful_response(): void
+    #[Test]
+    public function it_can_return_a_successful_response(): void
     {
-        $handler = new FileInfoController(
-            $this->config,
-            $this->cache,
-            $this->container->get(TranslatorInterface::class)
-        );
+        $handler = $this->container->get(FileInfoController::class);
 
         $request = $this->createMock(Request::class);
         $request->method('getQueryParams')->willReturn(['info' => 'README.md']);
@@ -36,13 +36,10 @@ class FileInfoControllerTest extends TestCase
         ]), (string) $response->getBody());
     }
 
-    public function test_it_can_return_a_not_found_response(): void
+    #[Test]
+    public function it_return_a_not_found_response_when_the_file_does_not_exist(): void
     {
-        $handler = new FileInfoController(
-            $this->config,
-            $this->cache,
-            $this->container->get(TranslatorInterface::class)
-        );
+        $handler = $this->container->get(FileInfoController::class);
 
         $request = $this->createMock(Request::class);
         $request->method('getQueryParams')->willReturn(['info' => 'not_a_file.test']);
@@ -53,14 +50,28 @@ class FileInfoControllerTest extends TestCase
         $this->assertEquals(404, $response->getStatusCode());
     }
 
-    public function test_it_returns_an_error_when_file_size_is_too_large(): void
+    #[Test]
+    public function it_return_a_not_found_response_when_the_file_is_hidden(): void
+    {
+        $this->container->set('hidden_files', ['README.md']);
+
+        $handler = $this->container->get(FileInfoController::class);
+
+        $request = $this->createMock(Request::class);
+        $request->method('getQueryParams')->willReturn(['info' => 'README.md']);
+
+        $response = $handler($request, new Response);
+
+        $this->assertInstanceOf(ResponseInterface::class, $response);
+        $this->assertEquals(404, $response->getStatusCode());
+    }
+
+    #[Test]
+    public function it_returns_an_error_when_file_size_is_too_large(): void
     {
         $this->container->set('max_hash_size', 10);
-        $handler = new FileInfoController(
-            $this->config,
-            $this->cache,
-            $this->container->get(TranslatorInterface::class)
-        );
+
+        $handler = $this->container->get(FileInfoController::class);
 
         $request = $this->createMock(Request::class);
         $request->method('getQueryParams')->willReturn(['info' => 'README.md']);

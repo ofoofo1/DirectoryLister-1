@@ -1,38 +1,87 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controllers;
 
+use App\Actions\CanonicalPath;
+use App\Actions\IsDirectLink;
 use DI\Container;
 use Psr\Http\Message\ResponseInterface;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
+use Slim\Views\Twig;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class IndexController
 {
-    /** @var Container Application container */
-    protected $container;
+    private const PROTECTED_PARAMS = ['dir', 'file', 'zip', 'info'];
 
-    /** Create a new IndexController object. */
-    public function __construct(Container $container)
+    public function __construct(
+        private Container $container,
+        private Twig $view,
+        private TranslatorInterface $translator,
+        private IsDirectLink $isDirectLink,
+        private CanonicalPath $canonicalPath,
+    ) {}
+
+    public function __invoke(Request $request, Response $response, ?string $path = null): ResponseInterface
     {
-        $this->container = $container;
+        if ($path !== null) {
+            $path = $this->normalizeRequestPath($request, $path);
+        }
+
+        $queryParams = $request->getQueryParams();
+        $firstQueryParam = array_key_first($queryParams);
+
+        if (in_array($firstQueryParam, self::PROTECTED_PARAMS, true)) {
+            $targetPath = ($this->canonicalPath)($queryParams[$firstQueryParam]);
+
+            if ($targetPath !== null && ($this->isDirectLink)($targetPath)) {
+                $requestPath = $path === null ? '' : (($this->canonicalPath)($path) ?? '');
+
+                if (! $this->isWithin($requestPath, $targetPath) && ! $this->isWithin($targetPath, $requestPath)) {
+                    return $this->view->render($response->withStatus(404), 'error.twig', [
+                        'message' => $this->translator->trans('error.file_not_found'),
+                    ]);
+                }
+            }
+        }
+
+        $controller = match ($firstQueryParam) {
+            'file' => FileController::class,
+            'info' => FileInfoController::class,
+            'search' => SearchController::class,
+            'zip' => ZipController::class,
+            default => DirectoryController::class,
+        };
+
+        return $this->container->call($controller, [$request, $response, $path]);
     }
 
-    /** Invoke the IndexController. */
-    public function __invoke(Request $request, Response $response): ResponseInterface
+    /**
+     * Strip the base path (the sub-directory the application is installed in)
+     * and the entry script from the request path so it may be resolved relative
+     * to the files path or from the query string.
+     */
+    private function normalizeRequestPath(Request $request, string $path): ?string
     {
-        switch (true) {
-            case array_key_exists('info', $request->getQueryParams()):
-                return $this->container->call(FileInfoController::class, [$request, $response]);
+        $basePath = trim(dirname('/' . ($request->getServerParams()['SCRIPT_NAME'] ?? '')), '/');
 
-            case array_key_exists('search', $request->getQueryParams()):
-                return $this->container->call(SearchController::class, [$request, $response]);
-
-            case array_key_exists('zip', $request->getQueryParams()):
-                return $this->container->call(ZipController::class, [$request, $response]);
-
-            default:
-                return $this->container->call(DirectoryController::class, [$request, $response]);
+        if ($basePath !== '' && ($path === $basePath || str_starts_with($path, $basePath . '/'))) {
+            $path = ltrim(substr($path, strlen($basePath)), '/');
         }
+
+        return $path !== '' && $path !== 'index.php' ? $path : null;
+    }
+
+    /** Determine if a path is within a protected path. */
+    private function isWithin(string $path, string $protected): bool
+    {
+        if ($path === '' || $protected === '') {
+            return false;
+        }
+
+        return $path === $protected || str_starts_with($path, $protected . '/');
     }
 }

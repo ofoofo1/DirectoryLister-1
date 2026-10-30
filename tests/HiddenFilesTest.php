@@ -1,16 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests;
 
 use App\HiddenFiles;
 use BadMethodCallException;
-use Tightenco\Collect\Support\Collection;
+use Illuminate\Support\Collection;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 
-/** @covers \App\HiddenFiles */
+#[CoversClass(HiddenFiles::class)]
 class HiddenFilesTest extends TestCase
 {
-    /** @dataProvider hiddenFilesProvider */
-    public function test_it_creates_a_collection_of_hidden_files(
+    #[DataProvider('hiddenFilesProvider')]
+    public function it_creates_a_collection_of_hidden_files(
         array $hiddenFilesArray,
         string $hiddenFilesList,
         bool $hideAppFiles,
@@ -20,18 +25,43 @@ class HiddenFilesTest extends TestCase
         $this->container->set('hidden_files_list', $hiddenFilesList);
         $this->container->set('hide_app_files', $hideAppFiles);
 
-        $hiddenFiles = HiddenFiles::fromConfig($this->config);
+        $hiddenFiles = HiddenFiles::fromContainer($this->container);
 
         $this->assertInstanceOf(Collection::class, $hiddenFiles);
         $this->assertEquals($expected, $hiddenFiles->values()->toArray());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_not_be_instantiated_via_the_static_make_method(): void
     {
         $this->expectException(BadMethodCallException::class);
 
         HiddenFiles::make([]);
+    }
+
+    #[Test]
+    public function it_does_not_hide_app_files_when_hide_app_files_is_a_false_string(): void
+    {
+        $this->container->set('hidden_files', []);
+        $this->container->set('hidden_files_list', 'NOT_A_REAL_FILE');
+        $this->container->set('hide_app_files', 'false');
+
+        $hiddenFiles = HiddenFiles::fromContainer($this->container);
+
+        $this->assertEquals([], $hiddenFiles->values()->toArray());
+    }
+
+    #[Test]
+    public function it_hides_app_files_when_hide_app_files_is_a_true_string(): void
+    {
+        $this->container->set('hidden_files', []);
+        $this->container->set('hidden_files_list', 'NOT_A_REAL_FILE');
+        $this->container->set('hide_app_files', 'true');
+
+        $hiddenFiles = HiddenFiles::fromContainer($this->container);
+
+        $this->assertContains('app', $hiddenFiles->values()->toArray());
+        $this->assertContains('index.php', $hiddenFiles->values()->toArray());
     }
 
     public function hiddenFilesProvider(): array
@@ -51,12 +81,12 @@ class HiddenFilesTest extends TestCase
             ],
             'App files' => [
                 [], 'NOT_A_REAL_FILE', true, [
-                    'app', 'index.php', '.env', '.env.example', '.hidden',
+                    'app', 'index.php', '.analytics', '.env', '.env.example', '.hidden',
                 ],
             ],
             'All' => [
                 ['foo', 'alpha'], $this->filePath('.hidden'), true, [
-                    'foo', 'alpha', 'bravo', 'app', 'index.php', '.env', '.env.example', '.hidden',
+                    'foo', 'alpha', 'bravo', 'app', 'index.php', '.analytics', '.env', '.env.example', '.hidden',
                 ],
             ],
         ];

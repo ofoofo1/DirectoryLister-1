@@ -1,137 +1,97 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Parameter \\#1 \\$factory of function DI\\\\factory expects callable\\(\\)\\: mixed, 'App\\\\\\\\Factories\\\\\\\\CacheFactory' given\\.$#"
+			message: '#^Dead catch \- Exception is never thrown in the try block\.$#'
+			identifier: catch.neverThrown
 			count: 1
-			path: app/config/container.php
+			path: app/src/Controllers/FileController.php
 
 		-
-			message: "#^Parameter \\#1 \\$factory of function DI\\\\factory expects callable\\(\\)\\: mixed, 'App\\\\\\\\Factories\\\\\\\\FinderFactory' given\\.$#"
+			message: '#^Dead catch \- Exception is never thrown in the try block\.$#'
+			identifier: catch.neverThrown
 			count: 1
-			path: app/config/container.php
+			path: app/src/Controllers/FileInfoController.php
 
 		-
-			message: "#^Parameter \\#1 \\$factory of function DI\\\\factory expects callable\\(\\)\\: mixed, 'App\\\\\\\\Factories\\\\\\\\TranslationFactory' given\\.$#"
+			message: '#^Cannot access offset ''mtime'' on array\{0\: int, 1\: int, 2\: int, 3\: int, 4\: int, 5\: int, 6\: int, 7\: int, \.\.\.\}\|false\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
 			count: 1
-			path: app/config/container.php
+			path: app/src/Controllers/ZipController.php
 
 		-
-			message: "#^Parameter \\#1 \\$factory of function DI\\\\factory expects callable\\(\\)\\: mixed, 'App\\\\\\\\Factories\\\\\\\\TwigFactory' given\\.$#"
+			message: '#^Method App\\Controllers\\ZipController\:\:createZip\(\) throws checked exception Exception but it''s missing from the PHPDoc @throws tag\.$#'
+			identifier: missingType.checkedException
 			count: 1
-			path: app/config/container.php
+			path: app/src/Controllers/ZipController.php
 
 		-
-			message: "#^Method App\\\\Controllers\\\\DirectoryController\\:\\:__invoke\\(\\) throws checked exception Twig\\\\Error\\\\LoaderError but it's missing from the PHPDoc @throws tag\\.$#"
-			count: 2
-			path: app/src/Controllers/DirectoryController.php
-
-		-
-			message: "#^Method App\\\\Controllers\\\\DirectoryController\\:\\:__invoke\\(\\) throws checked exception Twig\\\\Error\\\\RuntimeError but it's missing from the PHPDoc @throws tag\\.$#"
-			count: 2
-			path: app/src/Controllers/DirectoryController.php
-
-		-
-			message: "#^Method App\\\\Controllers\\\\DirectoryController\\:\\:__invoke\\(\\) throws checked exception Twig\\\\Error\\\\SyntaxError but it's missing from the PHPDoc @throws tag\\.$#"
-			count: 2
-			path: app/src/Controllers/DirectoryController.php
-
-		-
-			message: "#^Method App\\\\Controllers\\\\SearchController\\:\\:__invoke\\(\\) throws checked exception Twig\\\\Error\\\\LoaderError but it's missing from the PHPDoc @throws tag\\.$#"
-			count: 2
-			path: app/src/Controllers/SearchController.php
-
-		-
-			message: "#^Method App\\\\Controllers\\\\SearchController\\:\\:__invoke\\(\\) throws checked exception Twig\\\\Error\\\\RuntimeError but it's missing from the PHPDoc @throws tag\\.$#"
-			count: 2
-			path: app/src/Controllers/SearchController.php
-
-		-
-			message: "#^Method App\\\\Controllers\\\\SearchController\\:\\:__invoke\\(\\) throws checked exception Twig\\\\Error\\\\SyntaxError but it's missing from the PHPDoc @throws tag\\.$#"
-			count: 2
-			path: app/src/Controllers/SearchController.php
-
-		-
-			message: "#^Method App\\\\Exceptions\\\\ErrorHandler\\:\\:__invoke\\(\\) throws checked exception Twig\\\\Error\\\\LoaderError but it's missing from the PHPDoc @throws tag\\.$#"
+			message: '#^Property App\\Factories\\FinderFactory\:\:\$sortMethods type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
 			count: 1
-			path: app/src/Exceptions/ErrorHandler.php
+			path: app/src/Factories/FinderFactory.php
 
 		-
-			message: "#^Method App\\\\Exceptions\\\\ErrorHandler\\:\\:__invoke\\(\\) throws checked exception Twig\\\\Error\\\\RuntimeError but it's missing from the PHPDoc @throws tag\\.$#"
-			count: 1
-			path: app/src/Exceptions/ErrorHandler.php
-
-		-
-			message: "#^Method App\\\\Exceptions\\\\ErrorHandler\\:\\:__invoke\\(\\) throws checked exception Twig\\\\Error\\\\SyntaxError but it's missing from the PHPDoc @throws tag\\.$#"
-			count: 1
-			path: app/src/Exceptions/ErrorHandler.php
-
-		-
-			message: "#^Method App\\\\Factories\\\\TwigFactory\\:\\:__invoke\\(\\) throws checked exception ReflectionException but it's missing from the PHPDoc @throws tag\\.$#"
+			message: '#^Parameter \#2 \$callable of class Twig\\TwigFilter constructor expects array\{class\-string, string\}\|\(callable\(\)\: mixed\)\|null, App\\Filters\\ViewFilter given\.$#'
+			identifier: argument.type
 			count: 1
 			path: app/src/Factories/TwigFactory.php
 
 		-
-			message: "#^Method App\\\\Middlewares\\\\PruneCacheMiddleware\\:\\:winsLottery\\(\\) throws checked exception Exception but it's missing from the PHPDoc @throws tag\\.$#"
+			message: '#^Parameter \#2 \$callable of class Twig\\TwigFunction constructor expects array\{class\-string, string\}\|\(callable\(\)\: mixed\)\|null, App\\Functions\\ViewFunction given\.$#'
+			identifier: argument.type
 			count: 1
-			path: app/src/Middlewares/PruneCacheMiddleware.php
+			path: app/src/Factories/TwigFactory.php
 
 		-
-			message: "#^Parameter \\#1 \\$separator of function explode expects non\\-empty\\-string, string given\\.$#"
+			message: '#^Property App\\Factories\\TwigFactory\:\:\$viewFilters type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
 			count: 1
-			path: app/src/Support/Str.php
+			path: app/src/Factories/TwigFactory.php
 
 		-
-			message: "#^Parameter \\#1 \\$separator of function explode expects non\\-empty\\-string, string given\\.$#"
+			message: '#^Property App\\Factories\\TwigFactory\:\:\$viewFunctions type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
 			count: 1
-			path: app/src/ViewFunctions/Breadcrumbs.php
+			path: app/src/Factories/TwigFactory.php
 
 		-
-			message: "#^Dead catch \\- RuntimeException is never thrown in the try block\\.$#"
+			message: '#^Property App\\Functions\\Icon\:\:\$icons type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
 			count: 1
-			path: app/src/ViewFunctions/ModifiedTime.php
+			path: app/src/Functions/Icon.php
 
 		-
-			message: "#^Dead catch \\- RuntimeException is never thrown in the try block\\.$#"
+			message: '#^Cannot access offset ''mtime'' on array\{0\: int, 1\: int, 2\: int, 3\: int, 4\: int, 5\: int, 6\: int, 7\: int, \.\.\.\}\|false\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
 			count: 1
-			path: app/src/ViewFunctions/SizeForHumans.php
+			path: app/src/Functions/ModifiedTime.php
 
 		-
-			message: "#^Parameter \\#1 \\$finfo of function finfo_buffer expects resource, resource\\|false given\\.$#"
+			message: '#^Caught class DateInvalidTimeZoneException not found\.$#'
+			identifier: class.notFound
 			count: 1
-			path: tests/Controllers/ZipControllerTest.php
+			path: app/src/Functions/ModifiedTime.php
 
 		-
-			message: "#^Parameter \\#1 \\$finfo of function finfo_buffer expects resource, resource\\|false given\\.$#"
+			message: '#^Method App\\Functions\\ModifiedTime\:\:__invoke\(\) throws checked exception Exception but it''s missing from the PHPDoc @throws tag\.$#'
+			identifier: missingType.checkedException
+			count: 1
+			path: app/src/Functions/ModifiedTime.php
+
+		-
+			message: '#^Property App\\Managers\\MiddlewareManager\:\:\$middlewares type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/src/Managers/MiddlewareManager.php
+
+		-
+			message: '#^Property App\\Middlewares\\CacheControlMiddleware\:\:\$httpCache type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/src/Middlewares/CacheControlMiddleware.php
+
+		-
+			message: '#^Parameter \#1 \$finfo of function finfo_buffer expects finfo, finfo\|false given\.$#'
+			identifier: argument.type
 			count: 1
 			path: tests/Exceptions/ErrorHandlerTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$expected of method PHPUnit\\\\Framework\\\\Assert\\:\\:assertInstanceOf\\(\\) expects class\\-string\\<object\\>, string given\\.$#"
-			count: 1
-			path: tests/Factories/CacheFactoryTest.php
-
-		-
-			message: "#^Cannot call method getCallable\\(\\) on Twig\\\\TwigFunction\\|null\\.$#"
-			count: 11
-			path: tests/Factories/TwigFactoryTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$className of method PHPUnit\\\\Framework\\\\TestCase\\:\\:getMockBuilder\\(\\) expects class\\-string\\<object\\>, string given\\.$#"
-			count: 1
-			path: tests/Middlewares/PruneCacheMiddlewareTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$originalClassName of method PHPUnit\\\\Framework\\\\TestCase\\:\\:createMock\\(\\) expects class\\-string\\<object\\>, string given\\.$#"
-			count: 1
-			path: tests/Middlewares/PruneCacheMiddlewareTest.php
-
-		-
-			message: "#^Unable to resolve the template type RealInstanceType in call to method PHPUnit\\\\Framework\\\\TestCase\\:\\:createMock\\(\\)$#"
-			count: 1
-			path: tests/Middlewares/PruneCacheMiddlewareTest.php
-
-		-
-			message: "#^Unable to resolve the template type RealInstanceType in call to method PHPUnit\\\\Framework\\\\TestCase\\:\\:getMockBuilder\\(\\)$#"
-			count: 1
-			path: tests/Middlewares/PruneCacheMiddlewareTest.php
-

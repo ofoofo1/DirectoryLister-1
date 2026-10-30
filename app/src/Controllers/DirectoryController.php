@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controllers;
 
-use App\Config;
+use App\Actions\CanonicalPath;
+use App\Actions\IsHidden;
+use DI\Attribute\Inject;
 use Exception;
 use Psr\Http\Message\ResponseInterface;
 use Slim\Psr7\Request;
@@ -14,39 +18,31 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class DirectoryController
 {
-    /** @var Config The application configuration */
-    protected $config;
+    #[Inject('display_readmes')]
+    private string $displayReadmes;
 
-    /** @var Finder File finder component */
-    protected $finder;
-
-    /** @var Twig Twig templating component */
-    protected $view;
-
-    /** @var TranslatorInterface Translator component */
-    protected $translator;
-
-    /** Create a new IndexController object. */
     public function __construct(
-        Config $config,
-        Finder $finder,
-        Twig $view,
-        TranslatorInterface $translator
-    ) {
-        $this->config = $config;
-        $this->finder = $finder;
-        $this->view = $view;
-        $this->translator = $translator;
-    }
+        private Finder $finder,
+        private Twig $view,
+        private TranslatorInterface $translator,
+        private IsHidden $isHidden,
+        private CanonicalPath $canonicalPath,
+    ) {}
 
-    /** Invoke the IndexController. */
-    public function __invoke(Request $request, Response $response): ResponseInterface
+    public function __invoke(Request $request, Response $response, ?string $path = null): ResponseInterface
     {
-        $path = $request->getQueryParams()['dir'] ?? '.';
+        $relativePath = mb_rtrim($path ?? ($request->getQueryParams()['dir'] ?? '.'), '/');
+        $fullPath = ($this->canonicalPath)($relativePath);
+
+        if ($fullPath === null || $this->isHidden->path($fullPath)) {
+            return $this->view->render($response->withStatus(404), 'error.twig', [
+                'message' => $this->translator->trans('error.directory_not_found'),
+            ]);
+        }
 
         try {
-            $files = $this->finder->in($path)->depth(0);
-        } catch (Exception $exception) {
+            $files = $this->finder->in($fullPath)->depth(0);
+        } catch (Exception) {
             return $this->view->render($response->withStatus(404), 'error.twig', [
                 'message' => $this->translator->trans('error.directory_not_found'),
             ]);
@@ -54,31 +50,40 @@ class DirectoryController
 
         return $this->view->render($response, 'index.twig', [
             'files' => $files,
-            'path' => $path,
-            'readme' => $this->readme($files),
-            'title' => $path == '.' ? 'Home' : $path,
+            'path' => $relativePath,
+            'readme' => $this->readme($fullPath),
+            'title' => $relativePath == '.' ? 'Home' : $relativePath,
         ]);
     }
 
-    /** Return the README file within a finder object. */
-    protected function readme(Finder $files): ?SplFileInfo
+    /** Return the README file within a directory. */
+    private function readme(string $fullPath): ?SplFileInfo
     {
-        if (! $this->config->get('display_readmes')) {
+        if (! filter_var($this->displayReadmes, FILTER_VALIDATE_BOOL)) {
             return null;
         }
 
-        $readmes = (clone $files)->name('/^README(?:\..+)?$/i');
+        $files = Finder::create()->in($fullPath)->depth(0)->followLinks();
 
-        $readmes->filter(static function (SplFileInfo $file) {
-            return (bool) preg_match('/text\/.+/', (string) mime_content_type($file->getPathname()));
-        })->sort(static function (SplFileInfo $file1, SplFileInfo $file2) {
-            return $file1->getExtension() <=> $file2->getExtension();
-        });
+        $readmes = [];
+        foreach ($files as $file) {
+            if (! preg_match('/^README(?:\..+)?$/i', $file->getFilename())) {
+                continue;
+            }
 
-        if (! $readmes->hasResults()) {
+            if (! preg_match('/text\/.+/', (string) mime_content_type($file->getPathname()))) {
+                continue;
+            }
+
+            $readmes[] = $file;
+        }
+
+        if (empty($readmes)) {
             return null;
         }
 
-        return $readmes->getIterator()->current();
+        usort($readmes, static fn (SplFileInfo $file1, SplFileInfo $file2): int => $file1->getExtension() <=> $file2->getExtension());
+
+        return $readmes[0];
     }
 }

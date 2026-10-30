@@ -1,25 +1,29 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Middlewares;
 
 use App\Middlewares\RegisterGlobalsMiddleware;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Views\Twig;
 use Tests\TestCase;
 
-/** @covers \App\Middlewares\RegisterGlobalsMiddleware */
+#[CoversClass(RegisterGlobalsMiddleware::class)]
 class RegisterGlobalsMiddlewareTest extends TestCase
 {
     /** @var Twig Twig templating component */
-    protected $view;
+    private $view;
 
     /** @var ServerRequestInterface&MockObject */
-    protected $request;
+    private $request;
 
     /** @var RequestHandlerInterface&MockObject */
-    protected $handler;
+    private $handler;
 
     protected function setUp(): void
     {
@@ -30,14 +34,16 @@ class RegisterGlobalsMiddlewareTest extends TestCase
         $this->handler = $this->createMock(RequestHandlerInterface::class);
     }
 
-    public function test_it_sets_the_theme_view_variabe_to_light_by_default(): void
+    #[Test]
+    public function it_sets_the_theme_view_variabe_to_light_by_default(): void
     {
         (new RegisterGlobalsMiddleware($this->view))($this->request, $this->handler);
 
         $this->assertEquals(['theme' => 'light'], $this->view->getEnvironment()->getGlobals());
     }
 
-    public function test_it_sets_the_theme_view_variabe_to_dark_when_the_theme_cookie_is_dark(): void
+    #[Test]
+    public function it_sets_the_theme_view_variabe_to_dark_when_the_theme_cookie_is_dark(): void
     {
         $this->request->expects($this->once())->method('getCookieParams')->willReturn([
             'theme' => 'dark',
@@ -48,7 +54,8 @@ class RegisterGlobalsMiddlewareTest extends TestCase
         $this->assertEquals(['theme' => 'dark'], $this->view->getEnvironment()->getGlobals());
     }
 
-    public function test_it_sets_the_theme_view_variabe_to_light_when_the_theme_cookie_is_light(): void
+    #[Test]
+    public function it_sets_the_theme_view_variabe_to_light_when_the_theme_cookie_is_light(): void
     {
         $this->request->expects($this->once())->method('getCookieParams')->willReturn([
             'theme' => 'dark',
@@ -59,7 +66,8 @@ class RegisterGlobalsMiddlewareTest extends TestCase
         $this->assertEquals(['theme' => 'dark'], $this->view->getEnvironment()->getGlobals());
     }
 
-    public function test_it_sets_the_theme_view_variabe_to_light_for_an_unknown_value(): void
+    #[Test]
+    public function it_sets_the_theme_view_variabe_to_light_for_an_unknown_value(): void
     {
         $this->request->expects($this->once())->method('getCookieParams')->willReturn([
             'theme' => 'dim',

@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\SortMethods;
 
 use Symfony\Component\Finder\Finder;
 
 class Changed extends SortMethod
 {
-    /** Sory by file changed time. */
+    /** Sort by file changed time. */
     public function __invoke(Finder $finder): void
     {
         $finder->sortByChangedTime();
